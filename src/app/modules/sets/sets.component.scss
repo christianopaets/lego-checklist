@@ -1,0 +1,13 @@
+.sets {
+  padding: 24px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+  min-height: 0;
+  min-width: 0;
+
+  &__image {
+    display: block;
+    width: 100%;
+  }
+}

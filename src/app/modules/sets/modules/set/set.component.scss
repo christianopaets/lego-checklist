@@ -1,0 +1,31 @@
+.set {
+
+  p {
+    margin: 0;
+  }
+
+  &__progress-cell {
+    width: 68px;
+    text-align: center;
+  }
+
+  &__by-piece {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+  }
+
+  &__filters {
+    display: flex;
+    gap: 24px;
+    padding: 24px 16px;
+    align-items: center;
+  }
+
+  &__row {
+
+    &:hover {
+      background-color: rgba(#000, 0.08) !important;
+    }
+  }
+}
