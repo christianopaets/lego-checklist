@@ -1,18 +1,36 @@
 <section class="sets">
-  <div *ngFor="let item of sets"
+  <div *ngFor="let item of sets$ | async"
        class="sets__container">
-    <mat-card class="example-card">
-      <mat-card-header>
-        <mat-card-title>{{ item.name }}</mat-card-title>
-      </mat-card-header>
+    <mat-card class="sets__card"
+              appearance="outlined">
       <img mat-card-image
            class="sets__image"
-           [src]="item.image"
+           [src]="item.set_img_url"
            [alt]="item.name">
-      <mat-card-actions>
+      <p [title]="item.name"
+         class="sets__set-title label-large">{{ item.name }}</p>
+      <mat-card-actions class="sets__actions">
         <a mat-button
-           [routerLink]="item.id">Open</a>
+           mat-flat-button
+           color="primary"
+           [routerLink]="item.set_num">Open</a>
       </mat-card-actions>
     </mat-card>
+  </div>
+  <div class="sets__pagination">
+    <button mat-button
+            mat-flat-button
+            color="primary"
+            [disabled]="(prev$ | async)!"
+            (click)="prev()">
+      Prev
+    </button>
+    <button mat-button
+            mat-flat-button
+            color="primary"
+            [disabled]="(next$ | async)!"
+            (click)="next()">
+      Next
+    </button>
   </div>
 </section>

@@ -1,65 +1,42 @@
 import {Injectable} from '@angular/core';
-import list from "./list.json";
-import set42082_1 from './sets/42082-1.json';
-
-export interface LegoSet {
-  id: string;
-  name: string;
-  image: string;
-}
-
-export interface LegoSetItem {
-  PartID: number;
-  Quantity: number;
-  Colour: string;
-  Category: string;
-  DesignID: number;
-  PartName: string;
-  ImageURL: string;
-  SetCount: number;
-  Progress?: number;
-}
+import {Color, Part, PartInfo} from 'ng-rebrickable';
+import {Progress} from '../interfaces/progress.interface';
+import {LegoSetItem} from '../interfaces/lego-set-item.interface';
 
 @Injectable()
 export class DbService {
 
-  private readonly _sets: Map<string, LegoSetItem[]> = new Map([
-    ["42082-1", set42082_1]
-  ]);
+  private readonly _version = 'v1';
 
-  getSetList(): LegoSet[] {
-    return list;
+  saveProgression(id: string, set: Progress[]): void {
+    localStorage.setItem(`lego_set_id:${id}:${this._version}`, JSON.stringify(set));
   }
 
-  getSetItems(id: string): LegoSetItem[] {
-    if (!this._sets.has(id)) {
-      throw new Error("Set not found");
+  getProgress(id: string, parts: PartInfo<Part, Color>[]): Progress[] {
+    const key = `lego_set_id:${id}:${this._version}`;
+    if (!localStorage.getItem(key)) {
+      const newProgress = parts.map(part => ({id: part.element_id, progress: 0}));
+      this.saveProgression(id, newProgress);
     }
-    const set = this._sets.get(id)!;
-    const localStorageSet = this._getFromLocalStorage(id);
-    if (!localStorageSet) {
-      const newSet = set.map(item => ({...item, Progress: 0}));
-      this.saveProgression(id, newSet);
-      return newSet;
-    }
-    return set.map(item => {
-      const progress = localStorageSet.find(progressItem => progressItem.PartID === item.PartID);
-      return {
-        ...item,
-        Progress: progress?.Progress || 0
-      }
-    });
+    return this._getFromLocalStorage(id);
   }
 
-  saveProgression(id: string, set: LegoSetItem[]): void {
-    localStorage.setItem(`lego_set_id:${id}`, JSON.stringify(set));
+  migrate(): void {
+    const progressionKeys = Object.keys(localStorage).filter(key => key.startsWith('lego_set_id:'));
+    const progressionKeysOlderVersion = progressionKeys.filter(key => /^lego_set_id:(\d(-\d)?)+$/g.test(key));
+    progressionKeysOlderVersion.forEach(key => this._migrateVersion0ToCurrent(key));
   }
 
-  private _getFromLocalStorage(id: string): LegoSetItem[] | null {
-    const set = localStorage.getItem(`lego_set_id:${id}`);
-    if (!set) {
-      return null
-    }
-    return JSON.parse(set);
+  private _getFromLocalStorage(id: string): Progress[] {
+    const set = localStorage.getItem(`lego_set_id:${id}:${this._version}`);
+    return JSON.parse(set!);
+  }
+
+  private _migrateVersion0ToCurrent(key: string): void {
+    const newKey = `${key}:v1`;
+    const oldData = JSON.parse(localStorage.getItem(key)!) as LegoSetItem[];
+    const newData = oldData.map(item => ({id: `${item.PartID}`, progress: item.Progress}));
+    localStorage.setItem(newKey, JSON.stringify(newData));
+    localStorage.removeItem(key);
   }
 }

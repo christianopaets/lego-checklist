@@ -3,36 +3,48 @@
     <mat-form-field appearance="outline"
                     [floatLabel]="'always'">
       <mat-label>Filter by PartID</mat-label>
-      <input matInput [(ngModel)]="idFilter">
+      <input matInput [formControl]="idFilterControl">
     </mat-form-field>
-    <mat-checkbox [(ngModel)]="hideFilter">Hide completed</mat-checkbox>
+    <mat-checkbox [formControl]="hideCompletedControl">Hide completed</mat-checkbox>
+    <span class="title-medium set__total"
+          *ngIf="total$ | async as total">
+      {{total.progress}}/{{total.quantity}}
+    </span>
   </div>
-  <table mat-table [dataSource]="dataSource()">
+  <table mat-table
+         [dataSource]="(dataSource$ | async)!"
+         [trackBy]="trackBy">
     <ng-container matColumnDef="PartID">
       <th mat-header-cell *matHeaderCellDef> ID</th>
-      <td mat-cell *matCellDef="let element"> {{element.PartID}} </td>
+      <td mat-cell *matCellDef="let element"> {{element.element_id}} </td>
     </ng-container>
     <ng-container matColumnDef="PartName">
       <th mat-header-cell *matHeaderCellDef> Name</th>
-      <td mat-cell *matCellDef="let element"><p><strong>{{element.PartName}}</strong></p>
-        <p>{{ element.Colour }}</p></td>
+      <td mat-cell
+          class="set__pointer"
+          *matCellDef="let element"
+          (dblclick)="complete(element)">
+        <p><strong>{{element.part.name}}</strong></p>
+        <p>{{ element.Colour }}</p>
+      </td>
     </ng-container>
     <ng-container matColumnDef="ImageURL">
-      <th mat-header-cell *matHeaderCellDef width="68"> Image</th>
-      <td mat-cell *matCellDef="let element" width="68">
-        <img [ngSrc]="element.ImageURL" width="64" height="64" [alt]="element.PartName" style="vertical-align: inherit;">
+      <th mat-header-cell *matHeaderCellDef
+          class="set__cell-size"> Image</th>
+      <td mat-cell *matCellDef="let element">
+        <img [src]="element.part.part_img_url" width="64" height="64" [alt]="element.part.name" style="vertical-align: inherit;">
       </td>
     </ng-container>
     <ng-container matColumnDef="Quantity">
       <th mat-header-cell *matHeaderCellDef> Quantity</th>
-      <td mat-cell *matCellDef="let element"> {{element.Progress}}/<strong>{{element.Quantity}}</strong></td>
+      <td mat-cell *matCellDef="let element"> {{element.progress}}/<strong>{{element.quantity}}</strong></td>
     </ng-container>
     <ng-container matColumnDef="Progress">
-      <th mat-header-cell *matHeaderCellDef width="68"> Progress</th>
+      <th mat-header-cell *matHeaderCellDef class="set__cell-size"> Progress</th>
       <td mat-cell *matCellDef="let element" class="set__progress-cell">
         <mat-icon class="set__quantity-icon"
-                  [color]="element.Progress > element.Quantity ? 'warn' : undefined">
-          {{ element.Progress === element.Quantity ? "check_circle" : "sync_problem" }}
+                  [color]="element.progress > element.quantity ? 'warn' : undefined">
+          {{ element.progress === element.quantity ? "check_circle" : "sync_problem" }}
         </mat-icon>
       </td>
     </ng-container>
@@ -41,11 +53,11 @@
       <td mat-cell *matCellDef="let element">
         <div class="set__by-piece">
           <button mat-icon-button
-                  (click)="addQuantity(element.PartID, 1)">
+                  (click)="addQuantity(element.element_id, 1)">
             <mat-icon>add</mat-icon>
           </button>
           <button mat-icon-button
-                  (click)="addQuantity(element.PartID, -1)">
+                  (click)="addQuantity(element.element_id, -1)">
             <mat-icon>remove</mat-icon>
           </button>
         </div>
@@ -54,10 +66,11 @@
     <ng-container matColumnDef="By_Number">
       <th mat-header-cell *matHeaderCellDef> Add/Remove</th>
       <td mat-cell *matCellDef="let element">
-        <app-set-quantity-input (add)="addQuantity(element.PartID, $event)"></app-set-quantity-input>
+        <app-set-quantity-input (add)="addQuantity(element.element_id, $event)"></app-set-quantity-input>
       </td>
     </ng-container>
     <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-    <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="set__row"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+        class="set__row"></tr>
   </table>
 </section>

@@ -9,8 +9,9 @@ import {MatButtonModule} from '@angular/material/button';
 import {SetQuantityInputComponent} from './set-quantity-input/set-quantity-input.component';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatInputModule} from '@angular/material/input';
-import {FormsModule} from '@angular/forms';
+import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {MatCheckboxModule} from '@angular/material/checkbox';
+import {SetStoreModule} from './store/set.module';
 
 
 @NgModule({
@@ -27,8 +28,10 @@ import {MatCheckboxModule} from '@angular/material/checkbox';
     MatButtonModule,
     MatFormFieldModule,
     MatInputModule,
+    ReactiveFormsModule,
     FormsModule,
-    MatCheckboxModule
+    MatCheckboxModule,
+    SetStoreModule
   ]
 })
 export class SetModule {

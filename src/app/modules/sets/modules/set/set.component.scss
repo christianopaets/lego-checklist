@@ -23,9 +23,22 @@
   }
 
   &__row {
+    background-color: var(--md-theme-color-surface-0) !important;
 
     &:hover {
-      background-color: rgba(#000, 0.08) !important;
+      background-color: var(--md-theme-color-surface-1) !important;
     }
+  }
+
+  &__total {
+    margin-left: auto;
+  }
+
+  &__pointer {
+    cursor: pointer;
+  }
+
+  &__cell-size {
+    width: 68px;
   }
 }

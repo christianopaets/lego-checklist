@@ -5,6 +5,7 @@ import { SetsRoutingModule } from './sets-routing.module';
 import { SetsComponent } from './sets.component';
 import {MatCardModule} from '@angular/material/card';
 import {MatButtonModule} from '@angular/material/button';
+import {SetsStoreModule} from './store/sets.module';
 
 
 @NgModule({
@@ -15,7 +16,8 @@ import {MatButtonModule} from '@angular/material/button';
     CommonModule,
     SetsRoutingModule,
     MatCardModule,
-    MatButtonModule
+    MatButtonModule,
+    SetsStoreModule
   ]
 })
 export class SetsModule { }

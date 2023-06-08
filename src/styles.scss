@@ -1,8 +1,44 @@
-/* You can add global styles to this file, and also import other style files */
+@import "./app/sass/material/theme";
 
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+html, body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  background-color: var(--md-theme-color-background);
+}
 
 .set .mat-mdc-form-field-subscript-wrapper {
   display: none;
+}
+
+.mat-toolbar {
+
+  &.material-you {
+    background-color: var(--md-theme-color-surface-2);
+    padding: 0 24px;
+  }
+}
+
+.mdc-card {
+
+  &.mat-mdc-card-outlined {
+    border-color: var(--md-sys-color-outline);
+    background-color: var(--md-sys-color-surface);
+    border-radius: 12px;
+  }
+}
+
+.mdc-button {
+  border-radius: 100px !important;
+
+  &.mat-mdc-unelevated-button:not(:disabled) {
+    background-color: var(--md-theme-color-primary);
+  }
+}
+
+.mdc-data-table__header-cell {
+  background-color: var(--md-theme-color-surface-1) !important;
 }

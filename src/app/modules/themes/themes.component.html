@@ -1,0 +1,10 @@
+<section class="themes">
+  <mat-card appearance="outlined"
+            class="themes__card"
+            *ngFor="let theme of themes$ | async"
+            [routerLink]="'/themes/' + theme.id + '/sets'">
+    <mat-card-content>
+      <span class="label-large">{{ theme.name }}</span>
+    </mat-card-content>
+  </mat-card>
+</section>

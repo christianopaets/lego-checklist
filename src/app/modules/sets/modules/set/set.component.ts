@@ -1,67 +1,64 @@
-import {Component, computed, signal} from '@angular/core';
-import {DbService, LegoSetItem} from '../../../../db/db.service';
+import {Component, OnInit} from '@angular/core';
+import {DbService} from '../../../../db/db.service';
 import {ActivatedRoute} from '@angular/router';
+import {SetStore} from './store/set.store';
+import {FormControl} from '@angular/forms';
+import {combineLatest, debounceTime, map, startWith} from 'rxjs';
+import {PartProgression} from '../../../../interfaces/part-progression.interface';
 
 @Component({
   selector: 'app-set',
   templateUrl: './set.component.html',
   styleUrls: ['./set.component.scss']
 })
-export class SetComponent {
+export class SetComponent implements OnInit {
 
-  idFilterValue = signal<string>("");
+  readonly idFilterControl = new FormControl<string>('');
 
-  hideFilterValue = signal<boolean>(false);
-
-  get idFilter(): string {
-    return this.idFilterValue();
-  }
-
-  set idFilter(value: string) {
-    this.idFilterValue.set(value);
-  }
-
-  get hideFilter(): boolean {
-    return this.hideFilterValue();
-  }
-
-  set hideFilter(value: boolean) {
-    this.hideFilterValue.set(value);
-  }
-
-  readonly dataSource = computed(() => {
-    let filtered = this._dataSource;
-    if (this.hideFilterValue()) {
-      filtered = filtered.filter(item => item.Quantity !== item.Progress)
-    }
-    if (this.idFilterValue()) {
-      filtered = filtered.filter(item => item.PartID.toString().includes(this.idFilterValue()))
-    }
-    return filtered;
-
-  });
+  readonly hideCompletedControl = new FormControl<boolean>(false);
 
   readonly id = this.activatedRoute.snapshot.params['id'];
 
-  private readonly _dataSource = this.dbService.getSetItems(this.id)
+  readonly displayedColumns = ['PartID', 'PartName', 'ImageURL', 'Quantity', 'Progress', 'By_Piece', 'By_Number'];
 
-  readonly displayedColumns: (keyof LegoSetItem | string)[] = ['PartID', 'PartName', 'ImageURL', 'Quantity', 'Progress', 'By_Piece', 'By_Number'];
+  readonly dataSource$ = combineLatest([
+    this.setStore.parts$,
+    this.idFilterControl.valueChanges.pipe(startWith(this.idFilterControl.value)).pipe(debounceTime(200)),
+    this.hideCompletedControl.valueChanges.pipe(startWith(this.hideCompletedControl.value))
+  ])
+    .pipe(map(([parts, id, hide]) => this._filter(parts, id!, hide!)));
+
+  readonly total$ = this.setStore.totalCount$;
 
   constructor(private readonly dbService: DbService,
-              private readonly activatedRoute: ActivatedRoute) {
+              private readonly activatedRoute: ActivatedRoute,
+              private readonly setStore: SetStore) {
   }
 
-  addQuantity(partId: number, quantity: number): void {
-    const part = this._dataSource.find(item => item.PartID === partId);
-    if (!part) {
-      alert(`Part ${partId} not found`);
-      return;
+  ngOnInit(): void {
+    this.setStore.load(this.id);
+  }
+
+  addQuantity(id: string, progress: number): void {
+    this.setStore.add({id, progress});
+  }
+
+  trackBy(index: number, value: PartProgression): number {
+    return value.progress;
+  }
+
+  complete(val: PartProgression): void {
+    this.addQuantity(val.element_id, val.quantity - val.progress);
+  }
+
+  private _filter(parts: PartProgression[], id: string, hide: boolean): PartProgression[] {
+    if (!id && !hide) {
+      return parts;
     }
-    if (part.Progress! + quantity < 0) {
-      alert(`Progress can't be less than 0`);
-      return;
-    }
-    part.Progress! += quantity;
-    this.dbService.saveProgression(this.id, this._dataSource);
+    return parts.filter(part => {
+      let idFilter = id ? part.element_id.includes(id) : true;
+      let hideFilter = hide ? part.quantity !== part.progress : true;
+      return idFilter && hideFilter;
+    });
   }
 }
